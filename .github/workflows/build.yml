@@ -1,0 +1,40 @@
+name: Build Retendo Patcher
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install DevkitPro and WUT
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget tar gcc g++ make
+          
+          wget https://apt.devkitpro.org/install-devkitpro-pacman
+          chmod +x install-devkitpro-pacman
+          sudo ./install-devkitpro-pacman
+          
+          echo "export DEVKITPRO=/opt/devkitpro" >> $GITHUB_ENV
+          echo "export DEVKITPPC=\$DEVKITPRO/devkitPPC" >> $GITHUB_ENV
+          source $GITHUB_ENV
+          
+          sudo pacman -Syu --noconfirm wiiu-dev
+
+      - name: Build the project with make
+        run: |
+          make
+
+      - name: Verify build artifacts
+        run: |
+          ls -l bin/
